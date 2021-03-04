@@ -20,7 +20,7 @@ import (
 func main() {
 	app := &cli.App{
 		Name:                 "PandaKeeper",
-		Usage:                "./PandaKeeper -h",
+		Usage:                "The Keeper in Giant Panda Zoo To Perform Routine Tasks",
 		EnableBashCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -37,6 +37,11 @@ func main() {
 				Name:  "provider",
 				Value: "https://rinkeby.infura.io/v3/f081cccbb2744415b20add374caf68c9",
 				Usage: "RPC service address",
+			},
+			&cli.IntFlag{
+				Name:  "gasLimit",
+				Value: 300000,
+				Usage: "gas limit for updating",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -59,15 +64,17 @@ func main() {
 			log.Printf("Using account %s to update", crypto.PubkeyToAddress(*publicKeyECDSA))
 			log.Println("Contract:", c.String("contract"))
 			log.Println("Provider:", c.String("provider"))
+			log.Println("GasLimit:", c.Int("gasLimit"))
 
 			contractAddress := common.HexToAddress(c.String("contract"))
+			gasLimit := c.Int("gasLimit")
 
-			tryUpdate(c.String("provider"), priv, contractAddress)
+			tryUpdate(c.String("provider"), priv, contractAddress, gasLimit)
 			ticker := time.NewTicker(1 * time.Minute)
 			for {
 				select {
 				case <-ticker.C:
-					tryUpdate(c.String("provider"), priv, contractAddress)
+					tryUpdate(c.String("provider"), priv, contractAddress, gasLimit)
 				}
 			}
 		},
@@ -80,7 +87,7 @@ func main() {
 
 }
 
-func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address) {
+func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, gasLimit int) {
 	// create connection
 	client, err := ethclient.Dial(provider)
 	if err != nil {
@@ -124,7 +131,7 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address) {
 
 	// create transactor
 	auth := bind.NewKeyedTransactor(key)
-	auth.GasLimit = uint64(300000)
+	auth.GasLimit = uint64(gasLimit)
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.GasPrice = gasPrice
 
