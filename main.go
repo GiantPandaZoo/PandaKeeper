@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"io/ioutil"
 	"log"
@@ -13,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli/v2"
 )
 
@@ -44,22 +44,25 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			key, ok := new(big.Int).SetString(strings.TrimSuffix(string(content), "\n"), 16)
-			if !ok {
-				log.Fatal("cannot decode private key", string(content))
+
+			priv, err := crypto.HexToECDSA(strings.TrimSuffix(string(content), "\n"))
+			if err != nil {
+				log.Fatal("cannot decode private key", err)
 			}
 
-			priv := new(ecdsa.PrivateKey)
-			priv.PublicKey.Curve = crypto.S256()
-			priv.D = key
-			priv.PublicKey.X, priv.PublicKey.Y = crypto.S256().ScalarBaseMult(priv.D.Bytes())
+			publicKey := priv.Public()
+			publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+			if !ok {
+				log.Fatal("error casting public key to ECDSA")
+			}
 
-			log.Printf("Using account %s to update", crypto.PubkeyToAddress(priv.PublicKey))
+			log.Printf("Using account %s to update", crypto.PubkeyToAddress(*publicKeyECDSA))
 			log.Println("Contract:", c.String("contract"))
 			log.Println("Provider:", c.String("provider"))
 
 			contractAddress := common.HexToAddress(c.String("contract"))
 
+			tryUpdate(c.String("provider"), priv, contractAddress)
 			ticker := time.NewTicker(1 * time.Minute)
 			for {
 				select {
@@ -79,48 +82,57 @@ func main() {
 
 func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address) {
 	// create connection
-	rpcDial, err := rpc.Dial(provider)
+	client, err := ethclient.Dial(provider)
 	if err != nil {
 		log.Printf("PandaKeeper: connection to  %s failed, reason: %s", provider, err)
 		return
 	}
-	defer rpcDial.Close()
+	defer client.Close()
 
-	ethClient := ethclient.NewClient(rpcDial)
-	defer ethClient.Close()
-
-	// create caller
-	caller, err := NewAggregateUpdaterCaller(address, ethClient)
+	instance, err := NewAggregateUpdater(address, client)
 	if err != nil {
-		log.Println("PandaKeeper: NewPoolCaller failed:", err)
+		log.Println("PandaKeeper: NewAggregateUpdater failed:", err)
 		return
 	}
 
 	// query next update time
-	updateTime, err := caller.GetNextUpdateTime(nil)
+	updateTime, err := instance.GetNextUpdateTime(nil)
 	if err != nil {
 		log.Println("PandaKeeper: GetNextUpdateTime() failed:", err)
 		return
 	}
+
+	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
 	// still not expired
 	if time.Now().Unix() < updateTime.Int64() {
 		return
 	}
 
-	// create trasactor to update
-	poolTransactor, err := NewAggregateUpdaterTransactor(address, ethClient)
+	// query gas price & nonce
+	nonce, err := client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(key.PublicKey))
 	if err != nil {
-		log.Println("PandaKeeper: NewAggregateUpdaterTransactor failed:", err)
+		log.Println("PandaKeeper: client.PendingNonceAt() failed:", err)
 		return
 	}
 
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Println("PandaKeeper: client.SuggestGasPrice() failed:", err)
+		return
+	}
+
+	// create transactor
 	auth := bind.NewKeyedTransactor(key)
-	tx, err := poolTransactor.Update(auth)
+	auth.GasLimit = uint64(300000)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.GasPrice = gasPrice
+
+	tx, err := instance.Update(auth)
 	if err != nil {
 		log.Println("PandaKeeper: update transaction failed:", err)
 		return
 	}
 
-	log.Println("PandaKeeper: update transaction sent:", tx.Hash().String())
+	log.Println("PandaKeeper: update transaction sent:", tx.Hash().Hex())
 }
