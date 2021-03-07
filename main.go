@@ -62,19 +62,19 @@ func main() {
 			}
 
 			log.Printf("Using account %s to update", crypto.PubkeyToAddress(*publicKeyECDSA))
-			log.Println("Contract:", c.String("contract"))
-			log.Println("Provider:", c.String("provider"))
-			log.Println("GasLimit:", c.Int("gasLimit"))
-
 			contractAddress := common.HexToAddress(c.String("contract"))
 			gasLimit := c.Int("gasLimit")
+			provider := c.String("provider")
+			log.Println("Contract:", contractAddress)
+			log.Println("Provider:", provider)
+			log.Println("GasLimit:", gasLimit)
 
-			tryUpdate(c.String("provider"), priv, contractAddress, gasLimit)
+			tryUpdate(provider, priv, contractAddress, gasLimit)
 			ticker := time.NewTicker(1 * time.Minute)
 			for {
 				select {
 				case <-ticker.C:
-					tryUpdate(c.String("provider"), priv, contractAddress, gasLimit)
+					tryUpdate(provider, priv, contractAddress, gasLimit)
 				}
 			}
 		},
