@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+PandaKeeper
+privkey
 
 # Test binary, built with `go test -c`
 *.test
