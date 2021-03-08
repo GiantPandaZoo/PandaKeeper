@@ -40,7 +40,7 @@ func main() {
 			},
 			&cli.IntFlag{
 				Name:  "gasLimit",
-				Value: 300000,
+				Value: 5000000,
 				Usage: "gas limit for updating",
 			},
 		},
