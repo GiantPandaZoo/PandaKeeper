@@ -74,7 +74,10 @@ func main() {
 			for {
 				select {
 				case <-ticker.C:
-					tryUpdate(provider, priv, contractAddress, gasLimit)
+					// fail-retry
+					for !tryUpdate(provider, priv, contractAddress, gasLimit) {
+						<-time.After(2 * time.Second)
+					}
 				}
 			}
 		},
@@ -87,46 +90,46 @@ func main() {
 
 }
 
-func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, gasLimit int) {
+func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, gasLimit int) bool {
 	// create connection
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		log.Printf("PandaKeeper: connection to  %s failed, reason: %s", provider, err)
-		return
+		return false
 	}
 	defer client.Close()
 
 	instance, err := NewAggregateUpdater(address, client)
 	if err != nil {
 		log.Println("PandaKeeper: NewAggregateUpdater failed:", err)
-		return
+		return false
 	}
 
 	// query next update time
 	updateTime, err := instance.GetNextUpdateTime(nil)
 	if err != nil {
 		log.Println("PandaKeeper: GetNextUpdateTime() failed:", err)
-		return
+		return false
 	}
 
 	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
 	// still not expired
 	if time.Now().Unix() < updateTime.Int64() {
-		return
+		return false
 	}
 
 	// query gas price & nonce
 	nonce, err := client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(key.PublicKey))
 	if err != nil {
 		log.Println("PandaKeeper: client.PendingNonceAt() failed:", err)
-		return
+		return false
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Println("PandaKeeper: client.SuggestGasPrice() failed:", err)
-		return
+		return false
 	}
 
 	// create transactor
@@ -138,8 +141,9 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 	tx, err := instance.Update(auth)
 	if err != nil {
 		log.Println("PandaKeeper: update transaction failed:", err)
-		return
+		return false
 	}
 
 	log.Println("PandaKeeper: update transaction sent:", tx.Hash().Hex())
+	return true
 }
