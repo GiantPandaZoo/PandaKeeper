@@ -27,7 +27,7 @@ var (
 )
 
 // AggregateUpdaterABI is the input ABI used to generate the binding from.
-const AggregateUpdaterABI = "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"_owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIOptionPool\",\"name\":\"pool\",\"type\":\"address\"}],\"name\":\"addPool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNextUpdateTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"pools\",\"outputs\":[{\"internalType\":\"contractIOptionPool\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIOptionPool\",\"name\":\"pool\",\"type\":\"address\"}],\"name\":\"removePool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"update\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const AggregateUpdaterABI = "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"_owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIOptionPool[]\",\"name\":\"newPools\",\"type\":\"address[]\"}],\"name\":\"addPools\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"clearPools\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNextUpdateTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"pools\",\"outputs\":[{\"internalType\":\"contractIOptionPool\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIOptionPool\",\"name\":\"pool\",\"type\":\"address\"}],\"name\":\"removePool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"update\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // AggregateUpdater is an auto generated Go binding around an Ethereum contract.
 type AggregateUpdater struct {
@@ -264,25 +264,46 @@ func (_AggregateUpdater *AggregateUpdaterCallerSession) Pools(arg0 *big.Int) (co
 	return _AggregateUpdater.Contract.Pools(&_AggregateUpdater.CallOpts, arg0)
 }
 
-// AddPool is a paid mutator transaction binding the contract method 0xd914cd4b.
+// AddPools is a paid mutator transaction binding the contract method 0xb36a4ab1.
 //
-// Solidity: function addPool(address pool) returns()
-func (_AggregateUpdater *AggregateUpdaterTransactor) AddPool(opts *bind.TransactOpts, pool common.Address) (*types.Transaction, error) {
-	return _AggregateUpdater.contract.Transact(opts, "addPool", pool)
+// Solidity: function addPools(address[] newPools) returns()
+func (_AggregateUpdater *AggregateUpdaterTransactor) AddPools(opts *bind.TransactOpts, newPools []common.Address) (*types.Transaction, error) {
+	return _AggregateUpdater.contract.Transact(opts, "addPools", newPools)
 }
 
-// AddPool is a paid mutator transaction binding the contract method 0xd914cd4b.
+// AddPools is a paid mutator transaction binding the contract method 0xb36a4ab1.
 //
-// Solidity: function addPool(address pool) returns()
-func (_AggregateUpdater *AggregateUpdaterSession) AddPool(pool common.Address) (*types.Transaction, error) {
-	return _AggregateUpdater.Contract.AddPool(&_AggregateUpdater.TransactOpts, pool)
+// Solidity: function addPools(address[] newPools) returns()
+func (_AggregateUpdater *AggregateUpdaterSession) AddPools(newPools []common.Address) (*types.Transaction, error) {
+	return _AggregateUpdater.Contract.AddPools(&_AggregateUpdater.TransactOpts, newPools)
 }
 
-// AddPool is a paid mutator transaction binding the contract method 0xd914cd4b.
+// AddPools is a paid mutator transaction binding the contract method 0xb36a4ab1.
 //
-// Solidity: function addPool(address pool) returns()
-func (_AggregateUpdater *AggregateUpdaterTransactorSession) AddPool(pool common.Address) (*types.Transaction, error) {
-	return _AggregateUpdater.Contract.AddPool(&_AggregateUpdater.TransactOpts, pool)
+// Solidity: function addPools(address[] newPools) returns()
+func (_AggregateUpdater *AggregateUpdaterTransactorSession) AddPools(newPools []common.Address) (*types.Transaction, error) {
+	return _AggregateUpdater.Contract.AddPools(&_AggregateUpdater.TransactOpts, newPools)
+}
+
+// ClearPools is a paid mutator transaction binding the contract method 0x1e8b1135.
+//
+// Solidity: function clearPools() returns()
+func (_AggregateUpdater *AggregateUpdaterTransactor) ClearPools(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AggregateUpdater.contract.Transact(opts, "clearPools")
+}
+
+// ClearPools is a paid mutator transaction binding the contract method 0x1e8b1135.
+//
+// Solidity: function clearPools() returns()
+func (_AggregateUpdater *AggregateUpdaterSession) ClearPools() (*types.Transaction, error) {
+	return _AggregateUpdater.Contract.ClearPools(&_AggregateUpdater.TransactOpts)
+}
+
+// ClearPools is a paid mutator transaction binding the contract method 0x1e8b1135.
+//
+// Solidity: function clearPools() returns()
+func (_AggregateUpdater *AggregateUpdaterTransactorSession) ClearPools() (*types.Transaction, error) {
+	return _AggregateUpdater.Contract.ClearPools(&_AggregateUpdater.TransactOpts)
 }
 
 // RemovePool is a paid mutator transaction binding the contract method 0x3b7d0946.
