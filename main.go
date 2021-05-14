@@ -137,7 +137,7 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 	auth := bind.NewKeyedTransactor(key)
 	auth.GasLimit = uint64(gasLimit)
 	auth.Nonce = big.NewInt(int64(nonce))
-	//auth.GasPrice = big.NewInt(5e9)
+	auth.GasPrice = big.NewInt(6e9)
 
 	tx, err := instance.Update(auth)
 	if err != nil {
