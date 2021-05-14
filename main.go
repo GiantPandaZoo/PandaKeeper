@@ -118,18 +118,11 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 
 	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
-	// still not expired
-	if time.Now().Unix() < updateTime.Int64() {
+	// check confirmation
+	if lastUpdateTime.Cmp(updateTime) == 0 {
+		log.Println("PandaKeeper: still not confirmed:", lastUpdateTime, updateTime)
 		return false, common.Big0
 	}
-
-	// check confirmation
-	/*
-		if lastUpdateTime.Cmp(updateTime) == 0 {
-			log.Println("PandaKeeper: still not confirmed:", lastUpdateTime, updateTime)
-			return false, common.Big0
-		}
-	*/
 
 	// query gas price & nonce
 	nonce, err := client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(key.PublicKey))
