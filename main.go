@@ -74,19 +74,13 @@ func main() {
 
 			lastUpdateTime := common.Big0
 
-		WAIT_EXPIRY:
 			for {
 				select {
 				case <-ticker.C:
 					// fail-retry
-					for {
-						succ, updateTime := tryUpdate(provider, priv, contractAddress, gasLimit, lastUpdateTime)
-						if succ {
-							lastUpdateTime = updateTime
-							continue WAIT_EXPIRY
-						}
-
-						<-time.After(2 * time.Second)
+					succ, updateTime := tryUpdate(provider, priv, contractAddress, gasLimit, lastUpdateTime)
+					if succ {
+						lastUpdateTime = updateTime
 					}
 				}
 			}
@@ -124,14 +118,14 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 
 	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
+	// still not expired
+	if time.Now().Unix() < updateTime.Int64() {
+		return false, common.Big0
+	}
+
 	// check confirmation
 	if lastUpdateTime.Cmp(updateTime) == 0 {
 		log.Println("PandaKeeper: still not confirmed:", lastUpdateTime, updateTime)
-		return true, updateTime
-	}
-
-	// still not expired
-	if time.Now().Unix() < updateTime.Int64() {
 		return false, common.Big0
 	}
 
