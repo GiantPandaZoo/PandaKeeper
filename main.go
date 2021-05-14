@@ -126,17 +126,18 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 		return false
 	}
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Println("PandaKeeper: client.SuggestGasPrice() failed:", err)
-		return false
-	}
+	/*
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Println("PandaKeeper: client.SuggestGasPrice() failed:", err)
+			return false
+		}*/
 
 	// create transactor
 	auth := bind.NewKeyedTransactor(key)
 	auth.GasLimit = uint64(gasLimit)
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.GasPrice = gasPrice
+	//auth.GasPrice = big.NewInt(5e9)
 
 	tx, err := instance.Update(auth)
 	if err != nil {
