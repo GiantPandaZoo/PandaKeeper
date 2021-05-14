@@ -70,7 +70,7 @@ func main() {
 			log.Println("GasLimit:", gasLimit)
 
 			tryUpdate(provider, priv, contractAddress, gasLimit, common.Big0)
-			ticker := time.NewTicker(2 * time.Minute)
+			ticker := time.NewTicker(1 * time.Minute)
 
 			lastUpdateTime := common.Big0
 
