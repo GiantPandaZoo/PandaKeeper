@@ -118,6 +118,11 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 
 	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
+	// still not expired
+	if time.Now().Unix() < updateTime.Int64() {
+		return false, common.Big0
+	}
+
 	// if updateTime is within 1 minute without change
 	// assume the transaction has not yet confirmed
 	if lastUpdateTime.Cmp(updateTime) == 0 && time.Since(time.Unix(updateTime.Int64(), 0)) < time.Minute {
