@@ -70,7 +70,7 @@ func main() {
 			log.Println("GasLimit:", gasLimit)
 
 			tryUpdate(provider, priv, contractAddress, gasLimit, common.Big0)
-			ticker := time.NewTicker(5 * time.Minute)
+			ticker := time.NewTicker(1 * time.Minute)
 
 			lastUpdateTime := common.Big0
 
@@ -118,13 +118,12 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 
 	log.Printf("PandaKeeper: Next Update:%s", time.Unix(updateTime.Int64(), 0))
 
-	// check confirmation
-	/*
-		if lastUpdateTime.Cmp(updateTime) == 0 {
-			log.Println("PandaKeeper: still not confirmed:", lastUpdateTime, updateTime)
-			return false, common.Big0
-		}
-	*/
+	// if updateTime is within 1 minute without change
+	// assume the transaction has not yet confirmed
+	if lastUpdateTime.Cmp(updateTime) == 0 && time.Since(time.Unix(updateTime.Int64(), 0)) < time.Minute {
+		log.Println("PandaKeeper: still not confirmed within 1 minute:", lastUpdateTime, updateTime)
+		return false, common.Big0
+	}
 
 	// query gas price & nonce
 	nonce, err := client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(key.PublicKey))
