@@ -120,6 +120,7 @@ func tryUpdate(provider string, key *ecdsa.PrivateKey, address common.Address, g
 
 	// still not expired
 	if time.Now().Unix() < updateTime.Int64() {
+		log.Printf("PandaKeeper: no option expired: now:%v updateTime:%v", time.Now(), updateTime)
 		return false, common.Big0
 	}
 
